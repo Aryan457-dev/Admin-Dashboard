@@ -1,5 +1,3 @@
-print("🚀 Server starting...")
-
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import sqlite3
@@ -20,6 +18,8 @@ def create_table():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
             description TEXT NOT NULL,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
             is_active INTEGER DEFAULT 1
         )
     """)
@@ -30,7 +30,7 @@ create_table()
 
 @app.route("/")
 def home():
-    return "Server is running 🚀"
+    return "Server running"
 
 @app.route("/departments", methods=["GET"])
 def get_departments():
@@ -40,15 +40,16 @@ def get_departments():
     data = cursor.fetchall()
     conn.close()
 
-    departments = []
-    for row in data:
-        departments.append({
+    return jsonify([
+        {
             "id": row[0],
             "name": row[1],
-            "description": row[2]
-        })
-
-    return jsonify(departments)
+            "description": row[2],
+            "created_at": row[3],
+            "updated_at": row[4]
+        }
+        for row in data
+    ])
 
 @app.route("/departments", methods=["POST"])
 def add_department():
@@ -63,7 +64,7 @@ def add_department():
     conn.commit()
     conn.close()
 
-    return {"message": "Department added successfully"}
+    return {"message": "Department added"}
 
 @app.route("/departments/<int:id>", methods=["PUT"])
 def update_department(id):
@@ -72,13 +73,13 @@ def update_department(id):
     conn = connect_db()
     cursor = conn.cursor()
     cursor.execute(
-        "UPDATE departments SET name=?, description=? WHERE id=?",
+        "UPDATE departments SET name=?, description=?, updated_at=CURRENT_TIMESTAMP WHERE id=?",
         (data["name"], data["description"], id)
     )
     conn.commit()
     conn.close()
 
-    return {"message": "Department updated successfully"}
+    return {"message": "Updated successfully"}
 
 @app.route("/departments/<int:id>", methods=["DELETE"])
 def delete_department(id):
@@ -91,7 +92,7 @@ def delete_department(id):
     conn.commit()
     conn.close()
 
-    return {"message": "Department deleted successfully"}
+    return {"message": "Deleted successfully"}
 
 if __name__ == "__main__":
     app.run(debug=True)
