@@ -1,4 +1,4 @@
-const API = "https://admin-dashboard-wv1b.onrender.com";
+const API = "https://admin-dashboard-wv1b.onrender.com/departments";
 
 function loadDepartments() {
   fetch(API)
